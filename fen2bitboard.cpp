@@ -10,10 +10,10 @@ std::vector<converter::bitBoard> converter::Fen2BitBoard::convert(char* fen)
 {
     std::vector<bitBoard> board(static_cast<size_t>(Piece::chessTypesNumber));
     char* token = std::strtok(fen, "/");
-    int counter = CHESS_TOKEN_MAX_LENGTH - 1;
+    int counter = CHESS_LINE_LENGTH - 1;
     while (token != nullptr) {
 
-        for(int i = 0; i < CHESS_TOKEN_MAX_LENGTH; i++)
+        for(int i = 0; i < CHESS_LINE_LENGTH; i++)
         {
             if(std::isdigit(token[i]))
             {

@@ -25,15 +25,13 @@ enum class Piece
 };
 
 using bitBoard = unsigned long long;
-constexpr int CHESS_TYPES = 12;
-constexpr int CHESS_TOKEN_MAX_LENGTH = 8;
 constexpr int CHESS_LINE_LENGTH = 8;
+constexpr int FEN_MAX_LENGTH = 72;
 
 class Fen2BitBoard{
-
+public:
     Fen2BitBoard()
     {
-        m_board.resize(CHESS_TYPES);
         m_figureMap.emplace('r', Piece::blackRooks);
         m_figureMap.emplace('n', Piece::blackKnights);
         m_figureMap.emplace('b', Piece::blackBishops);
