@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace converter
+namespace chess
 {
 enum class Piece
 {

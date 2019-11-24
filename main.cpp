@@ -1,5 +1,6 @@
 #include <iostream>
 #include "fen2bitboard.h"
+#include "knight_moves.h"
 #include <string>
 #include <ctime>
 #include <chrono>
@@ -8,6 +9,8 @@
 #include <chrono>
 #include <fstream>
 
+constexpr int TEST_COUNT = 10;
+
 #define BOOST_TEST_MODULE test_main
 
 #include <boost/test/included/unit_test.hpp>
@@ -15,22 +18,139 @@ using namespace std;
 
 using namespace boost::unit_test;
 BOOST_AUTO_TEST_SUITE(test_suite_main)
-converter::Fen2BitBoard instance;
-BOOST_AUTO_TEST_CASE(simple)
+
+BOOST_AUTO_TEST_CASE(FEN_2_BitBoard)
 {
-    char* buffer = new char[converter::FEN_MAX_LENGTH];
-    std::vector<converter::bitBoard> output(static_cast<size_t>(converter::Piece::chessTypesNumber));
-    ifstream file("test.0.in");
-    if (file.is_open())
+    chess::Fen2BitBoard instance;
+    char* buffer = new char[chess::FEN_MAX_LENGTH];
+    std::vector<chess::bitBoard> output(static_cast<size_t>(chess::Piece::chessTypesNumber));
+    std::string filename = "./fen2bitboard/test.0.in";
+    char* digit = new char[1];
+    digit[0] = '0';
+
+    for(int i = 0; i < TEST_COUNT; i ++)
     {
-        file.getline(buffer,converter::FEN_MAX_LENGTH,'\n');
-        output = instance.convert(buffer);
-        file.close();
+        ifstream file(filename.c_str());
+        if (file.is_open())
+        {
+            file.getline(buffer, chess::FEN_MAX_LENGTH,'\n');
+            output = instance.convert(buffer);
+            file.close();
+        }
+        else
+            BOOST_TEST_MESSAGE("Cannot open file\n\n");
 
+        filename.replace(filename.find("in"), strlen("in"), "out");
+        file.open(filename.c_str());
+        if (file.is_open())
+        {
+            chess::bitBoard temp;
+            for(size_t i = 0; i < static_cast<size_t>(chess::Piece::chessTypesNumber); i++)
+            {
+                file >> temp;
+                BOOST_CHECK_MESSAGE(output[i] == temp,
+                                    "FEN was converted wrong: convertd value - " << output[i] << ", real - " << temp
+                                    << ", test name - " << filename);
+            }
+            file.close();
+        }
+        else
+            BOOST_TEST_MESSAGE("Cannot open file\n\n");
+
+        digit[0] += 1;
+        filename.replace(20, 1, digit);
+        filename.replace(filename.find("out"), strlen("out"), "in");
     }
-    else
-        BOOST_TEST_MESSAGE("Файл не открыт\n\n");
-
 }
 
+BOOST_AUTO_TEST_CASE(knight_moves_masks)
+{
+    constexpr size_t DATA_NUMBER = 2;
+    std::string filename = "./knight_moves/test.0.in";
+    char* digit = new char[1];
+    digit[0] = '0';
+    int input = 0;
+    chess::Figure knight;
+    chess::ChessData moves;
+
+    for(int i = 0; i < TEST_COUNT; i ++)
+    {
+        ifstream file(filename.c_str());
+        if (file.is_open())
+        {
+            file >> input;
+            moves = knight.getKnightData(input);
+            file.close();
+        }
+        else
+            BOOST_TEST_MESSAGE("Cannot open file\n\n");
+
+        filename.replace(filename.find("in"), strlen("in"), "out");
+        file.open(filename.c_str());
+        if (file.is_open())
+        {
+            chess::bitBoard temp[2];
+            for(size_t i = 0; i < DATA_NUMBER; i++)
+            {
+                file >> temp[i];
+            }
+            BOOST_CHECK_MESSAGE(moves.movesQuantity == static_cast<int>(temp[0]),
+                                "wrong moves quantity: expected - " << temp[0] << ", real - " << moves.movesQuantity
+                                << ", test name - " << filename);
+            file.close();
+        }
+        else
+            BOOST_TEST_MESSAGE("Cannot open file\n\n");
+
+        digit[0] += 1;
+        filename.replace(20, 1, digit);
+        filename.replace(filename.find("out"), strlen("out"), "in");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(queen_rook_bishop_moves_masks)
+{
+    chess::bitBoard output[3];
+    char* buffer = new char[chess::FEN_MAX_LENGTH];
+    std::string filename = "./queen_rook_bishop_moves/test.0.in";
+    char* digit = new char[1];
+    digit[0] = '0';
+
+    for(int i = 0; i < TEST_COUNT; i ++)
+    {
+        if(filename == "test.6.in")
+            BOOST_TEST_MESSAGE("breakpoint");
+
+        ifstream file(filename.c_str());
+        if (file.is_open())
+        {
+            file.getline(buffer, chess::FEN_MAX_LENGTH,'\n');
+            instance.convert(buffer);
+            file.close();
+        }
+        else
+            BOOST_TEST_MESSAGE("Cannot open file\n\n");
+
+        filename.replace(filename.find("in"), strlen("in"), "out");
+        file.open(filename.c_str());
+        if (file.is_open())
+        {
+            chess::bitBoard temp;
+            for(size_t i = 0; i < static_cast<size_t>(chess::Piece::chessTypesNumber); i++)
+            {
+                file >> temp;
+                BOOST_CHECK_MESSAGE(output[i] == temp,
+                                    "FEN was converted wrong: convertd value - " << output[i] << ", real - " << temp
+                                    << ", test name - " << filename);
+            }
+            file.close();
+        }
+        else
+            BOOST_TEST_MESSAGE("Cannot open file\n\n");
+
+        digit[0] += 1;
+        filename.replace(20, 1, digit);
+        filename.replace(filename.find("out"), strlen("out"), "in");
+    }
+}
 BOOST_AUTO_TEST_SUITE_END()

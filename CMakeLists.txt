@@ -6,7 +6,11 @@ find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 set(CMAKE_BUILD_TYPE DEBUG)
 include_directories(${Boost_INCLUDE_DIR})
 
-add_library(${PROJECT_NAME} SHARED fen2bitboard.h fen2bitboard.cpp)
+add_library(${PROJECT_NAME} SHARED
+    fen2bitboard.h fen2bitboard.cpp
+    knight_moves.h knight_moves.cpp
+    queen_rook_bishop.h queen_rook_bishop.cpp)
+
 add_executable(${PROJECT_NAME}_test "main.cpp")
 
 set_target_properties(${PROJECT_NAME} ${PROJECT_NAME}_test PROPERTIES
