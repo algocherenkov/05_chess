@@ -1,6 +1,7 @@
 #include <iostream>
 #include "fen2bitboard.h"
 #include "knight_moves.h"
+#include "queen_rook_bishop.h"
 #include <string>
 #include <ctime>
 #include <chrono>
@@ -109,23 +110,19 @@ BOOST_AUTO_TEST_CASE(knight_moves_masks)
 }
 
 BOOST_AUTO_TEST_CASE(queen_rook_bishop_moves_masks)
-{
-    chess::bitBoard output[3];
+{    
     char* buffer = new char[chess::FEN_MAX_LENGTH];
     std::string filename = "./queen_rook_bishop_moves/test.0.in";
-    char* digit = new char[1];
-    digit[0] = '0';
+    std::string digit("0");
+    std::vector<chess::bitBoard> result;
 
     for(int i = 0; i < TEST_COUNT; i ++)
     {
-        if(filename == "test.6.in")
-            BOOST_TEST_MESSAGE("breakpoint");
-
         ifstream file(filename.c_str());
         if (file.is_open())
         {
             file.getline(buffer, chess::FEN_MAX_LENGTH,'\n');
-            instance.convert(buffer);
+            result = chess::getFigureMoves(buffer);
             file.close();
         }
         else
@@ -136,11 +133,11 @@ BOOST_AUTO_TEST_CASE(queen_rook_bishop_moves_masks)
         if (file.is_open())
         {
             chess::bitBoard temp;
-            for(size_t i = 0; i < static_cast<size_t>(chess::Piece::chessTypesNumber); i++)
+            for(size_t i = 0; i < result.size(); i++)
             {
                 file >> temp;
-                BOOST_CHECK_MESSAGE(output[i] == temp,
-                                    "FEN was converted wrong: convertd value - " << output[i] << ", real - " << temp
+                BOOST_CHECK_MESSAGE(result[i] == temp,
+                                    "FEN was converted wrong: convertd value - " << result[i] << ", real - " << temp
                                     << ", test name - " << filename);
             }
             file.close();
@@ -149,7 +146,7 @@ BOOST_AUTO_TEST_CASE(queen_rook_bishop_moves_masks)
             BOOST_TEST_MESSAGE("Cannot open file\n\n");
 
         digit[0] += 1;
-        filename.replace(20, 1, digit);
+        filename.replace(31, 1, digit);
         filename.replace(filename.find("out"), strlen("out"), "in");
     }
 }
