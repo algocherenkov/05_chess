@@ -49,13 +49,20 @@ void shiftToDirectionAndCutExtraPositions(bitBoard rookInitPos, bitBoard& movesM
     }
 }
 
+void combineResults(std::vector<bitBoard>& tempResults, bitBoard& result)
+{
+    for(auto& res: tempResults)
+        result &= res;
+}
+
 std::vector<bitBoard> getFigureMoves(char *fen)
 {
     std::vector<bitBoard> result;
+    std::vector<bitBoard> tempResults;
     Fen2BitBoard converter;
-    auto bitResult = converter.convert(fen);
-
     Figure unit;
+
+    auto bitResult = converter.convert(fen);    
     ChessData figureData = unit.getRookData(bitResult[static_cast<int>(Piece::whiteRooks)]);
 
     for(size_t i = 0; i < static_cast<size_t>(Piece::chessTypesNumber); i++)
@@ -64,16 +71,19 @@ std::vector<bitBoard> getFigureMoves(char *fen)
         if(!tempBitBoard)
             continue;
 
-        figureData.movesMask ^= tempBitBoard;
+        tempResults.push_back(figureData.movesMask ^ tempBitBoard);
 
         bool eaterSign = i < 6? false: true;
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], figureData.movesMask, 1, ShiftDirection::LEFT_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], figureData.movesMask, 1, ShiftDirection::RIGHT_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], figureData.movesMask, 8, ShiftDirection::UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], figureData.movesMask, 8, ShiftDirection::DOWN_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults[i], 1, ShiftDirection::LEFT_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults[i], 1, ShiftDirection::RIGHT_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults[i], 8, ShiftDirection::UP_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults[i], 8, ShiftDirection::DOWN_SHIFT, eaterSign);
     }
+    if(!tempResults.empty())
+        combineResults(tempResults, figureData.movesMask);
     result.push_back(figureData.movesMask);
 
+    tempResults.clear();
     unit.clear();
     figureData = unit.getBishopData(bitResult[static_cast<int>(Piece::whiteBishops)]);
 
@@ -83,16 +93,19 @@ std::vector<bitBoard> getFigureMoves(char *fen)
         if(!tempBitBoard)
             continue;
 
-        figureData.movesMask ^= tempBitBoard;
+        tempResults.push_back(figureData.movesMask ^ tempBitBoard);
 
         bool eaterSign = i < 6? false: true;
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], figureData.movesMask, 7, ShiftDirection::LEFT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], figureData.movesMask, 9, ShiftDirection::RIGHT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], figureData.movesMask, 7, ShiftDirection::RIGHT_DOWN_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], figureData.movesMask, 9, ShiftDirection::LEFT_DOWN_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults[i], 7, ShiftDirection::LEFT_UP_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults[i], 9, ShiftDirection::RIGHT_UP_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults[i], 7, ShiftDirection::RIGHT_DOWN_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults[i], 9, ShiftDirection::LEFT_DOWN_SHIFT, eaterSign);
     }
+    if(!tempResults.empty())
+        combineResults(tempResults, figureData.movesMask);
     result.push_back(figureData.movesMask);
 
+    tempResults.clear();
     unit.clear();
     figureData = unit.getQueenData(bitResult[static_cast<int>(Piece::whiteQueens)]);
 
@@ -102,18 +115,20 @@ std::vector<bitBoard> getFigureMoves(char *fen)
         if(!tempBitBoard)
             continue;
 
-        figureData.movesMask ^= tempBitBoard;
+        tempResults.push_back(figureData.movesMask ^ tempBitBoard);
 
         bool eaterSign = i < 6? false: true;
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], figureData.movesMask, 1, ShiftDirection::LEFT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], figureData.movesMask, 1, ShiftDirection::RIGHT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], figureData.movesMask, 8, ShiftDirection::RIGHT_DOWN_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], figureData.movesMask, 8, ShiftDirection::LEFT_DOWN_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], figureData.movesMask, 7, ShiftDirection::LEFT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], figureData.movesMask, 9, ShiftDirection::RIGHT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], figureData.movesMask, 7, ShiftDirection::RIGHT_DOWN_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], figureData.movesMask, 9, ShiftDirection::LEFT_DOWN_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 1, ShiftDirection::LEFT_UP_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 1, ShiftDirection::RIGHT_UP_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 8, ShiftDirection::RIGHT_DOWN_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 8, ShiftDirection::LEFT_DOWN_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 7, ShiftDirection::LEFT_UP_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 9, ShiftDirection::RIGHT_UP_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 7, ShiftDirection::RIGHT_DOWN_SHIFT, eaterSign);
+        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 9, ShiftDirection::LEFT_DOWN_SHIFT, eaterSign);
     }
+    if(!tempResults.empty())
+        combineResults(tempResults, figureData.movesMask);
     result.push_back(figureData.movesMask);
 
     return result;
