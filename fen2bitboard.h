@@ -28,6 +28,16 @@ using bitBoard = unsigned long long;
 constexpr int CHESS_LINE_LENGTH = 8;
 constexpr int FEN_MAX_LENGTH = 72;
 
+constexpr bitBoard RIGHT_BORDER_MASK = 0x8080808080808080;
+constexpr bitBoard LEFT_BORDER_MASK = 0x0101010101010101;
+constexpr bitBoard UPPER_BORDER_MASK = 0xFF00000000000000;
+constexpr bitBoard BOTTOM_BORDER_MASK = 0x00000000000000FF;
+
+constexpr bitBoard RIGHT_UPPER_BORDER_MASK = 0xFF80808080808080;
+constexpr bitBoard RIGHT_BOTTOM_BORDER_MASK = 0x80808080808080FF;
+constexpr bitBoard LEFT_UPPER_BORDER_MASK = 0xFF01010101010101;
+constexpr bitBoard LEFT_BOTTOM_BORDER_MASK = 0x01010101010101FF;
+
 class Fen2BitBoard{
 public:
     Fen2BitBoard()

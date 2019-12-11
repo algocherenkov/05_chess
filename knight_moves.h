@@ -23,6 +23,7 @@ struct ChessData{
 class Figure {
     ChessData m_data;
 public:
+    ChessData getKingData(int pos);
     ChessData getKnightData(int pos);
     ChessData getQueenData(bitBoard pos);
     ChessData getRookData(bitBoard pos);

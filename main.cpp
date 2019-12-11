@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(queen_rook_bishop_moves_masks)
         if (file.is_open())
         {
             file.getline(buffer, chess::FEN_MAX_LENGTH,'\n');
-            result = chess::getFigureMoves(buffer);
+            result = chess::getFiguresRBQMoves(buffer);
             file.close();
         }
         else
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(queen_rook_bishop_moves_masks)
             {
                 file >> temp;
                 BOOST_CHECK_MESSAGE(result[i] == temp,
-                                    "FEN was converted wrong: convertd value - " << result[i] << ", real - " << temp
+                                    "number " << i << ", error: result value - " << result[i] << ", real - " << temp
                                     << ", test name - " << filename);
             }
             file.close();
@@ -147,6 +147,51 @@ BOOST_AUTO_TEST_CASE(queen_rook_bishop_moves_masks)
 
         digit[0] += 1;
         filename.replace(31, 1, digit);
+        filename.replace(filename.find("out"), strlen("out"), "in");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(king_moves_masks)
+{
+    constexpr size_t DATA_NUMBER = 2;
+    std::string filename = "./king_moves/test.0.in";
+    char* digit = new char[1];
+    digit[0] = '0';
+    int input = 0;
+    chess::Figure king;
+    chess::ChessData moves;
+
+    for(int i = 0; i < TEST_COUNT; i ++)
+    {
+        ifstream file(filename.c_str());
+        if (file.is_open())
+        {
+            file >> input;
+            moves = king.getKingData(input);
+            file.close();
+        }
+        else
+            BOOST_TEST_MESSAGE("Cannot open file\n\n");
+
+        filename.replace(filename.find("in"), strlen("in"), "out");
+        file.open(filename.c_str());
+        if (file.is_open())
+        {
+            chess::bitBoard temp[2];
+            for(size_t i = 0; i < DATA_NUMBER; i++)
+            {
+                file >> temp[i];
+            }
+            BOOST_CHECK_MESSAGE(moves.movesQuantity == static_cast<int>(temp[0]),
+                                "wrong moves quantity: expected - " << temp[0] << ", real - " << moves.movesQuantity
+                                << ", test name - " << filename);
+            file.close();
+        }
+        else
+            BOOST_TEST_MESSAGE("Cannot open file\n\n");
+
+        digit[0] += 1;
+        filename.replace(20, 1, digit);
         filename.replace(filename.find("out"), strlen("out"), "in");
     }
 }

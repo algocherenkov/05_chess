@@ -3,11 +3,6 @@
 
 namespace chess {
 
-bool isEdge(bitBoard pos)
-{
-    return BOARD_EDGE & pos;
-}
-
 void Figure::countMoves(bitBoard &posBits)
 {
     while (posBits != 0)
@@ -55,42 +50,54 @@ ChessData Figure::getRookData(bitBoard pos)
 ChessData Figure::getBishopData(bitBoard pos)
 {
     bitBoard leftBottom = pos, leftUpper = pos, rightBottom = pos, rightUpper = pos;
-    const auto bitPosition = std::log(pos)/std::log(2);    
-
-    bitBoard verticalBitsLine = int(bitPosition) % CHESS_LINE_LENGTH;
 
     for(int i = 1; i < CHESS_LINE_LENGTH; i++)
     {
-        leftBottom |= leftBottom >> 9;
-        if(isEdge(leftBottom))
+        if(LEFT_BOTTOM_BORDER_MASK & leftBottom)
             break;
+        leftBottom |= leftBottom >> 9;        
     }
 
     for(int i = 1; i < CHESS_LINE_LENGTH; i++)
     {
-        leftUpper |= leftUpper << 7;
-        if(isEdge(leftUpper))
+        if(LEFT_UPPER_BORDER_MASK &leftUpper)
             break;
+        leftUpper |= leftUpper << 7;        
     }
 
     for(int i = 1; i < CHESS_LINE_LENGTH; i++)
     {
-        rightBottom |= rightBottom >> 7;
-        if(isEdge(rightBottom))
+        if(RIGHT_BOTTOM_BORDER_MASK & rightBottom)
             break;
+        rightBottom |= rightBottom >> 7;        
     }
 
     for(int i = 1; i < CHESS_LINE_LENGTH; i++)
     {
-        rightUpper |= rightUpper << 9;
-        if(isEdge(rightUpper))
+        if(RIGHT_UPPER_BORDER_MASK &rightUpper)
             break;
+        rightUpper |= rightUpper << 9;        
     }
 
     m_data.movesMask = leftBottom | leftUpper | rightBottom | rightUpper;
     m_data.movesMask ^= pos;
     pos = m_data.movesMask;
     countMoves(pos);
+    return m_data;
+}
+
+ChessData Figure::getKingData(int pos)
+{
+    bitBoard knightBits = static_cast<bitBoard>(std::pow(2, pos));
+    m_data.movesMask = (nGH & (knightBits <<  6 | knightBits >> 10))
+                 |  (nH & (knightBits << 15 | knightBits >> 17))
+                 | (nA  & (knightBits << 17 | knightBits >> 15))
+                 | (nAB & (knightBits << 10 | knightBits >>  6));
+
+    knightBits = m_data.movesMask;
+
+    countMoves(knightBits);
+
     return m_data;
 }
 

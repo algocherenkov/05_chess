@@ -3,5 +3,5 @@
 #include "knight_moves.h"
 
 namespace chess {
-    std::vector<chess::bitBoard> getFigureMoves(char* fen);
+    std::vector<chess::bitBoard> getFiguresRBQMoves(char* fen);
 }

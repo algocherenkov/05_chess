@@ -1,50 +1,44 @@
 #include "queen_rook_bishop.h"
 namespace chess {
 
-enum class ShiftDirection {
-    RIGHT_SHIFT,
-    RIGHT_UP_SHIFT,
-    LEFT_SHIFT,
-    LEFT_UP_SHIFT,
-    UP_SHIFT,
-    DOWN_SHIFT,
-    RIGHT_DOWN_SHIFT,
-    LEFT_DOWN_SHIFT,
-};
-
-void shiftToDirectionAndCutExtraPositions(bitBoard rookInitPos, bitBoard& movesMask, int shift, ShiftDirection dir, bool eaterSign)
+void cutExtraPositionsAccordingToDirection(bitBoard shiftData, bitBoard& movesMask, int shift, bitBoard dirMask, bool eaterSign)
 {
-    bool noMovePoint = false;
+    if(dirMask & shiftData)
+        return;
+
+    bool noMovePoint = false;    
     for(int j = 1; j < CHESS_LINE_LENGTH; j++)
     {
-        switch (dir) {
-        case ShiftDirection::RIGHT_SHIFT:
-        case ShiftDirection::UP_SHIFT:
-        case ShiftDirection::RIGHT_UP_SHIFT:
-        case ShiftDirection::LEFT_UP_SHIFT:
-            rookInitPos <<= shift;
+        switch (dirMask) {
+        case RIGHT_BORDER_MASK:
+        case UPPER_BORDER_MASK:
+        case RIGHT_UPPER_BORDER_MASK:
+        case LEFT_UPPER_BORDER_MASK:
+
+            shiftData <<= shift;
             break;
-        case ShiftDirection::LEFT_SHIFT:
-        case ShiftDirection::DOWN_SHIFT:
-        case ShiftDirection::RIGHT_DOWN_SHIFT:
-        case ShiftDirection::LEFT_DOWN_SHIFT:
-            rookInitPos >>= shift;
+        case LEFT_BORDER_MASK:
+        case BOTTOM_BORDER_MASK:
+        case RIGHT_BOTTOM_BORDER_MASK:
+        case LEFT_BOTTOM_BORDER_MASK:
+
+            shiftData >>= shift;
             break;
         default:
             break;
         }
 
         if(noMovePoint)
-            movesMask &= ~rookInitPos;
+            movesMask &= ~shiftData;
 
-        if(!(rookInitPos & movesMask) && !noMovePoint)
+        if(!(shiftData & movesMask) && !noMovePoint)
         {
             noMovePoint = true;
             if(eaterSign)
-                movesMask |= rookInitPos;
+                movesMask |= shiftData;
         }
 
-        if(BOARD_EDGE & rookInitPos)
+        if(dirMask & shiftData)
             break;
     }
 }
@@ -55,7 +49,7 @@ void combineResults(std::vector<bitBoard>& tempResults, bitBoard& result)
         result &= res;
 }
 
-std::vector<bitBoard> getFigureMoves(char *fen)
+std::vector<bitBoard> getFiguresRBQMoves(char *fen)
 {
     std::vector<bitBoard> result;
     std::vector<bitBoard> tempResults;
@@ -74,11 +68,12 @@ std::vector<bitBoard> getFigureMoves(char *fen)
         tempResults.push_back(figureData.movesMask ^ tempBitBoard);
 
         bool eaterSign = i < 6? false: true;
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults[i], 1, ShiftDirection::LEFT_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults[i], 1, ShiftDirection::RIGHT_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults[i], 8, ShiftDirection::UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults[i], 8, ShiftDirection::DOWN_SHIFT, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults.back(), 1, LEFT_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults.back(), 1, RIGHT_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults.back(), 8, UPPER_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteRooks)], tempResults.back(), 8, BOTTOM_BORDER_MASK, eaterSign);
     }
+
     if(!tempResults.empty())
         combineResults(tempResults, figureData.movesMask);
     result.push_back(figureData.movesMask);
@@ -96,10 +91,10 @@ std::vector<bitBoard> getFigureMoves(char *fen)
         tempResults.push_back(figureData.movesMask ^ tempBitBoard);
 
         bool eaterSign = i < 6? false: true;
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults[i], 7, ShiftDirection::LEFT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults[i], 9, ShiftDirection::RIGHT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults[i], 7, ShiftDirection::RIGHT_DOWN_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults[i], 9, ShiftDirection::LEFT_DOWN_SHIFT, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults.back(), 7, LEFT_UPPER_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults.back(), 9, RIGHT_UPPER_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults.back(), 7, RIGHT_BOTTOM_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteBishops)], tempResults.back(), 9, LEFT_BOTTOM_BORDER_MASK, eaterSign);
     }
     if(!tempResults.empty())
         combineResults(tempResults, figureData.movesMask);
@@ -118,14 +113,14 @@ std::vector<bitBoard> getFigureMoves(char *fen)
         tempResults.push_back(figureData.movesMask ^ tempBitBoard);
 
         bool eaterSign = i < 6? false: true;
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 1, ShiftDirection::LEFT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 1, ShiftDirection::RIGHT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 8, ShiftDirection::RIGHT_DOWN_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 8, ShiftDirection::LEFT_DOWN_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 7, ShiftDirection::LEFT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 9, ShiftDirection::RIGHT_UP_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 7, ShiftDirection::RIGHT_DOWN_SHIFT, eaterSign);
-        shiftToDirectionAndCutExtraPositions(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults[i], 9, ShiftDirection::LEFT_DOWN_SHIFT, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults.back(), 1, LEFT_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults.back(), 1, RIGHT_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults.back(), 8, UPPER_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults.back(), 8, BOTTOM_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults.back(), 7, LEFT_UPPER_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults.back(), 9, RIGHT_UPPER_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults.back(), 7, RIGHT_BOTTOM_BORDER_MASK, eaterSign);
+        cutExtraPositionsAccordingToDirection(bitResult[static_cast<int>(Piece::whiteQueens)], tempResults.back(), 9, LEFT_BOTTOM_BORDER_MASK, eaterSign);
     }
     if(!tempResults.empty())
         combineResults(tempResults, figureData.movesMask);
