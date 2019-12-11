@@ -88,15 +88,14 @@ ChessData Figure::getBishopData(bitBoard pos)
 
 ChessData Figure::getKingData(int pos)
 {
-    bitBoard knightBits = static_cast<bitBoard>(std::pow(2, pos));
-    m_data.movesMask = (nGH & (knightBits <<  6 | knightBits >> 10))
-                 |  (nH & (knightBits << 15 | knightBits >> 17))
-                 | (nA  & (knightBits << 17 | knightBits >> 15))
-                 | (nAB & (knightBits << 10 | knightBits >>  6));
+    bitBoard kingBits = static_cast<bitBoard>(std::pow(2, pos));
+    m_data.movesMask = (nH & (kingBits <<  7 | kingBits >> 1 | kingBits >> 9))
+                 |  (nA & (kingBits << 9 | kingBits << 1 | kingBits >> 7))
+                 | (kingBits << 8 | kingBits >> 8);
 
-    knightBits = m_data.movesMask;
+    kingBits = m_data.movesMask;
 
-    countMoves(knightBits);
+    countMoves(kingBits);
 
     return m_data;
 }

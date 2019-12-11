@@ -185,6 +185,9 @@ BOOST_AUTO_TEST_CASE(king_moves_masks)
             BOOST_CHECK_MESSAGE(moves.movesQuantity == static_cast<int>(temp[0]),
                                 "wrong moves quantity: expected - " << temp[0] << ", real - " << moves.movesQuantity
                                 << ", test name - " << filename);
+            BOOST_CHECK_MESSAGE(moves.movesMask == temp[1],
+                                "wrong mask: expected - " << temp[1] << ", real - " << moves.movesMask
+                                << ", test name - " << filename);
             file.close();
         }
         else
