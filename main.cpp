@@ -173,7 +173,55 @@ BOOST_AUTO_TEST_CASE(king_moves_masks)
         else
             BOOST_TEST_MESSAGE("Cannot open file\n\n");
 
-        filename.replace(filename.find("in"), strlen("in"), "out");
+        filename.replace(filename.rfind("in"), strlen("in"), "out");
+        file.open(filename.c_str());
+        if (file.is_open())
+        {
+            chess::bitBoard temp[2];
+            for(size_t i = 0; i < DATA_NUMBER; i++)
+            {
+                file >> temp[i];
+            }
+            BOOST_CHECK_MESSAGE(moves.movesQuantity == static_cast<int>(temp[0]),
+                                "wrong moves quantity: expected - " << temp[0] << ", real - " << moves.movesQuantity
+                                << ", test name - " << filename);
+            BOOST_CHECK_MESSAGE(moves.movesMask == temp[1],
+                                "wrong mask: expected - " << temp[1] << ", real - " << moves.movesMask
+                                << ", test name - " << filename);
+            file.close();
+        }
+        else
+            BOOST_TEST_MESSAGE("Cannot open file\n\n");
+
+        digit[0] += 1;
+        filename.replace(18, 1, digit);
+        filename.replace(filename.find("out"), strlen("out"), "in");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(FEN_to_ASCII)
+{
+    constexpr size_t DATA_NUMBER = 11;
+    std::string filename = "./fen_to_ascii/test.0.in";
+    char* digit = new char[1];
+    digit[0] = '0';
+    int input = 0;
+    chess::Figure king;
+    chess::ChessData moves;
+
+    for(int i = 0; i < TEST_COUNT; i ++)
+    {
+        ifstream file(filename.c_str());
+        if (file.is_open())
+        {
+            file >> input;
+            moves = king.getKingData(input);
+            file.close();
+        }
+        else
+            BOOST_TEST_MESSAGE("Cannot open file\n\n");
+
+        filename.replace(filename.rfind("in"), strlen("in"), "out");
         file.open(filename.c_str());
         if (file.is_open())
         {
