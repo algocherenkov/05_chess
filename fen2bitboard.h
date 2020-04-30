@@ -27,6 +27,7 @@ enum class Piece
 using bitBoard = unsigned long long;
 constexpr int CHESS_LINE_LENGTH = 8;
 constexpr int FEN_MAX_LENGTH = 72;
+constexpr int DRAWBOARD_MAX_LENGTH = 22;
 
 constexpr bitBoard RIGHT_BORDER_MASK = 0x8080808080808080;
 constexpr bitBoard LEFT_BORDER_MASK = 0x0101010101010101;
@@ -57,8 +58,10 @@ public:
     }
 
     std::vector<bitBoard> convert(char *fen);
+    std::vector<std::string> drawBoard(char* fen);
 
 private:    
+    std::vector<std::string> m_board;
     std::unordered_map<char, Piece> m_figureMap;
 };
 }
